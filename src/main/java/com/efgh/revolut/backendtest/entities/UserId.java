@@ -34,6 +34,6 @@ public class UserId {
     public enum UserIdType {
         PASSPORT,
         PESSEL,
-        OTHER;
+        OTHER
     }
 }

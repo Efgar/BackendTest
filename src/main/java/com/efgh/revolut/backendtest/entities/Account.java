@@ -15,26 +15,13 @@ import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 public class Account {
     private UUID accountNumber;
     private BigDecimal accountBalance;
-    private List<User> owners = new ArrayList<>();
+    private List<User> owners;
 
-    public Account(BigDecimal initialBalance, List<User> owners) {
-        if (iNegativeValue(initialBalance)) {
-            throw new IllegalArgumentException("Initial balance can not be negative");
-        }
-
-        if (CollectionUtils.isEmpty(owners)) {
-            throw new IllegalArgumentException("The account must have at least one owner");
-        }
-
-        owners.forEach(owner -> {
-            if(owner == null){
-                throw new IllegalArgumentException("Invalid owner defined for the account");
-            }
-        });
-
-        this.accountNumber = UUID.randomUUID();
+    public Account(BigDecimal initialBalance, List<User> accountOwners) {
+        accountNumber = UUID.randomUUID();
         accountBalance = defaultIfNull(initialBalance, BigDecimal.ZERO);
-        this.owners.addAll(owners);
+        owners = accountOwners;
+        validate();
     }
 
     public void addMoney(BigDecimal value) {
@@ -55,6 +42,10 @@ public class Account {
         destinatary.addMoney(value);
     }
 
+    public boolean isOwnedByUser(UserId userId){
+        return owners.stream().anyMatch(owner -> owner.getUserId().equals(userId));
+    }
+
     public BigDecimal getCurrentBalance() {
         return accountBalance;
     }
@@ -69,6 +60,22 @@ public class Account {
 
     private boolean iNegativeValue(BigDecimal value) {
         return value != null && BigDecimal.ZERO.compareTo(value) > 0;
+    }
+
+    private void validate(){
+        if (iNegativeValue(accountBalance)) {
+            throw new IllegalArgumentException("Initial balance can not be negative");
+        }
+
+        if (CollectionUtils.isEmpty(owners)) {
+            throw new IllegalArgumentException("The account must have at least one owner");
+        }
+
+        owners.forEach(owner -> {
+            if(owner == null){
+                throw new IllegalArgumentException("Invalid owner defined for the account");
+            }
+        });
     }
 
     @Override
